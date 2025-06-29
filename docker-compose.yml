@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysqlDb:
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=foyer
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql       # Volume pour les données MySQL
+      - mysql-logs:/var/log/mysql       # Volume pour les logs MySQL
+
+  FoyerApplication:
+    depends_on:
+      - mysqlDb
+    image: faten024/projetdevopsfaten
+    restart: on-failure
+    ports:
+      - 8082:8082
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url": "jdbc:mysql://mysqlDb:3306/foyer?createDatabaseIfNotExist=true",
+        "spring.datasource.username": "root",
+        "spring.datasource.password": null,
+        "spring.jpa.properties.hibernate.dialect": "org.hibernate.dialect.MySQL5InnoDBDialect",
+        "spring.jpa.hibernate.ddl-auto": "update"
+      }'
+    stdin_open: true
+    tty: true
+
+volumes:
+  mysql-data:
+  mysql-logs:
